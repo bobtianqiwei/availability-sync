@@ -1,9 +1,9 @@
-// BobAvailabilitySyncApp.swift developed by Bob Tianqi Wei
+// AvailabilitySyncApp.swift developed by Bob Tianqi Wei
 
 import SwiftUI
 
 @main
-struct BobAvailabilitySyncApp: App {
+struct AvailabilitySyncApp: App {
     @StateObject private var model = AppModel()
 
     var body: some Scene {

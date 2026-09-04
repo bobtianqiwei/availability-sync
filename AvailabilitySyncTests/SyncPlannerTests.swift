@@ -1,7 +1,7 @@
 // SyncPlannerTests.swift developed by Bob Tianqi Wei
 
 import XCTest
-@testable import BobAvailabilitySync
+@testable import AvailabilitySync
 
 final class SyncPlannerTests: XCTestCase {
     private let start = Date(timeIntervalSince1970: 1_800_000_000)

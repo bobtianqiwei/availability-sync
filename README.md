@@ -1,6 +1,6 @@
-# Bob Availability Sync
+# Availability Sync
 
-Bob Availability Sync is a small, local-only macOS utility that copies busy time from multiple EventKit calendars into one target calendar. It is built with SwiftUI and EventKit for macOS 14 or later.
+Availability Sync is a small, local-only macOS utility that copies busy time from multiple EventKit calendars into one target calendar. It is built with SwiftUI and EventKit for macOS 14 or later.
 
 The app has no server component, external calendar API, login flow, analytics, or telemetry. Calendar data stays in EventKit on your Mac and in the calendar accounts already configured in macOS.
 
@@ -20,8 +20,8 @@ The app has no server component, external calendar API, login flow, analytics, o
 
 ## Build and run
 
-1. Open `BobAvailabilitySync.xcodeproj` in Xcode 15 or later.
-2. Select the `BobAvailabilitySync` scheme and `My Mac` as the run destination.
+1. Open `Availability Sync.xcodeproj` in Xcode 15 or later.
+2. Select the `Availability Sync` scheme and `My Mac` as the run destination.
 3. Press **Run** or use **Product → Build**.
 4. Grant Full Calendar Access when macOS asks.
 5. Select a writable target calendar.
@@ -38,7 +38,7 @@ The app requests full EventKit access because it must read source events and cre
 If access was denied or limited to write-only access:
 
 1. Open **System Settings → Privacy & Security → Calendars**.
-2. Enable full access for Bob Availability Sync.
+2. Enable full access for the app.
 3. Return to the app and click **Check Again**.
 
 The sandbox Calendar entitlement and permission usage descriptions are included in the Xcode project.
@@ -87,13 +87,13 @@ They do not copy the original title, source calendar name, source/account name, 
 Run the included planner and privacy tests with:
 
 ```sh
-xcodebuild test -project BobAvailabilitySync.xcodeproj -scheme BobAvailabilitySync -destination 'platform=macOS'
+xcodebuild test -project "Availability Sync.xcodeproj" -scheme "Availability Sync" -destination 'platform=macOS'
 ```
 
 ## Project structure
 
 ```text
-BobAvailabilitySync/
+AvailabilitySync/
 ├── App/          App entry point and coordination
 ├── Models/       Calendar rules and sync result models
 ├── Services/     EventKit access, planning, reconciliation, and login item support
