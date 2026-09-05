@@ -2,6 +2,24 @@
 
 import Foundation
 
+enum PastRange: String, CaseIterable, Identifiable, Sendable {
+    case none
+    case twoDays
+    case oneWeek
+    case oneMonth
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .none: "None"
+        case .twoDays: "2 days"
+        case .oneWeek: "1 week"
+        case .oneMonth: "1 month"
+        }
+    }
+}
+
 enum CalendarMode: String, Codable, CaseIterable, Identifiable, Sendable {
     case showTitle
     case busyOnly
@@ -42,6 +60,7 @@ struct CalendarInfo: Hashable, Identifiable {
 struct SyncSettings: Sendable {
     let targetCalendarIdentifier: String
     let calendarModes: [String: CalendarMode]
+    let pastRange: PastRange
     let rangeMonths: Int
     let mergeDuplicates: Bool
     let managedTargetCalendarIdentifiers: Set<String>

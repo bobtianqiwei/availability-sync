@@ -26,8 +26,8 @@ final class AppModel: ObservableObject {
         settings.$syncIntervalMinutes
             .dropFirst()
             .removeDuplicates()
-            .sink { [weak self] _ in
-                self?.scheduleAutomaticSync()
+            .sink { [weak self] minutes in
+                self?.scheduleAutomaticSync(every: minutes)
             }
             .store(in: &cancellables)
     }
@@ -51,7 +51,7 @@ final class AppModel: ObservableObject {
         hasStarted = true
         eventKit.refreshCalendars()
         settings.launchAtLogin = launchAtLoginManager.isEnabled
-        scheduleAutomaticSync()
+        scheduleAutomaticSync(every: settings.syncIntervalMinutes)
 
         if eventKit.permissionStatus.canReadEvents && !settings.targetCalendarIdentifier.isEmpty {
             Task { await syncNow() }
@@ -108,9 +108,9 @@ final class AppModel: ObservableObject {
         }
     }
 
-    private func scheduleAutomaticSync() {
+    private func scheduleAutomaticSync(every minutes: Int) {
         syncTimer?.invalidate()
-        let interval = TimeInterval(settings.syncIntervalMinutes * 60)
+        let interval = TimeInterval(minutes * 60)
         let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 await self?.syncNow()

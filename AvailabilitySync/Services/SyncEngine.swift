@@ -40,9 +40,19 @@ final class SyncEngine {
 
         let now = Date()
         let calendar = Calendar.current
-        guard let rangeStart = calendar.date(byAdding: .day, value: -2, to: now),
+        let pastOffset: (component: Calendar.Component, value: Int) = switch settings.pastRange {
+        case .none: (.day, 0)
+        case .twoDays: (.day, -2)
+        case .oneWeek: (.weekOfYear, -1)
+        case .oneMonth: (.month, -1)
+        }
+        guard let rangeStart = calendar.date(
+            byAdding: pastOffset.component,
+            value: pastOffset.value,
+            to: now
+        ),
               let rangeEnd = calendar.date(byAdding: .month, value: settings.rangeMonths, to: now),
-              let cleanupStart = calendar.date(byAdding: .day, value: -30, to: now),
+              let cleanupStart = calendar.date(byAdding: .month, value: -1, to: now),
               let cleanupEnd = calendar.date(byAdding: .month, value: 13, to: now) else {
             throw SyncEngineError.dateRangeUnavailable
         }

@@ -9,8 +9,8 @@ The app has no server component, external calendar API, login flow, analytics, o
 - Detects every event calendar available through EventKit
 - Excludes the selected target calendar from the source list
 - Supports `Show Title`, `Busy Only`, and `Ignore` rules for each source calendar
-- Syncs 1, 2, 4, 6, or 12 months into the future, with a two-day lookback for recent updates
-- Runs automatically every 15, 30, or 60 minutes while the app is open
+- Syncs from now, 2 days, 1 week, or 1 month in the past through 1, 2, 4, 6, or 12 months in the future
+- Runs automatically every 1, 3, 5, 10, 15, 30, or 60 minutes while the app is open
 - Can register itself as a macOS login item
 - Expands recurring EventKit events into occurrences in the selected range
 - Skips canceled events and events explicitly marked as free
@@ -20,7 +20,7 @@ The app has no server component, external calendar API, login flow, analytics, o
 
 ## Build and run
 
-1. Open `Availability Sync.xcodeproj` in Xcode 15 or later.
+1. Open `Availability Sync.xcodeproj` in Xcode 26.4 or later.
 2. Select the `Availability Sync` scheme and `My Mac` as the run destination.
 3. Press **Run** or use **Product → Build**.
 4. Grant Full Calendar Access when macOS asks.

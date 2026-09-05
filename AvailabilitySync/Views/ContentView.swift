@@ -7,10 +7,7 @@ struct ContentView: View {
     @ObservedObject var settings: SettingsStore
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            Divider()
-
+        Group {
             if model.eventKit.permissionStatus.canReadEvents {
                 settingsContent
             } else {
@@ -21,29 +18,6 @@ struct ContentView: View {
         .task {
             model.start()
         }
-    }
-
-    private var header: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "calendar.badge.clock")
-                .font(.system(size: 27, weight: .medium))
-                .foregroundStyle(.tint)
-                .frame(width: 42, height: 42)
-                .background(.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Availability Sync")
-                    .font(.title2.weight(.semibold))
-                Text("Copy availability between local macOS calendars")
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline)
-            }
-
-            Spacer()
-            StatusBadge(state: model.syncState)
-        }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 18)
     }
 
     private var settingsContent: some View {
@@ -122,6 +96,16 @@ struct ContentView: View {
 
     private var scheduleSection: some View {
         SettingsSection(title: "Sync Settings", systemImage: "gearshape") {
+            LabeledContent("Past range") {
+                Picker("Past range", selection: $settings.pastRange) {
+                    ForEach(PastRange.allCases) { range in
+                        Text(range.label).tag(range)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 140)
+            }
+
             LabeledContent("Future range") {
                 Picker("Future range", selection: $settings.rangeMonths) {
                     ForEach([1, 2, 4, 6, 12], id: \.self) { months in
@@ -134,7 +118,7 @@ struct ContentView: View {
 
             LabeledContent("Automatic sync") {
                 Picker("Automatic sync", selection: $settings.syncIntervalMinutes) {
-                    ForEach([15, 30, 60], id: \.self) { minutes in
+                    ForEach([1, 3, 5, 10, 15, 30, 60], id: \.self) { minutes in
                         Text("Every \(minutes) min").tag(minutes)
                     }
                 }
@@ -143,6 +127,7 @@ struct ContentView: View {
             }
 
             Toggle("Merge duplicate events", isOn: $settings.mergeDuplicates)
+            Toggle("Show Menu Bar Icon", isOn: $settings.showMenuBarIcon)
             Toggle("Launch at Login", isOn: Binding(
                 get: { settings.launchAtLogin },
                 set: { model.setLaunchAtLogin($0) }
@@ -280,30 +265,10 @@ private struct CalendarRuleRow: View {
                 }
             }
             .labelsHidden()
-            .frame(width: 125)
+            .pickerStyle(.segmented)
+            .frame(width: 250)
         }
         .padding(.vertical, 8)
-    }
-}
-
-private struct StatusBadge: View {
-    let state: SyncState
-
-    var body: some View {
-        HStack(spacing: 6) {
-            if state == .syncing {
-                ProgressView().controlSize(.mini)
-            } else {
-                Circle()
-                    .fill(state.statusColor)
-                    .frame(width: 7, height: 7)
-            }
-            Text(state.title)
-                .font(.caption.weight(.medium))
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(.quaternary, in: Capsule())
     }
 }
 
@@ -317,14 +282,5 @@ private extension SyncState {
     var isFailure: Bool {
         if case .failure = self { return true }
         return false
-    }
-
-    var statusColor: Color {
-        switch self {
-        case .idle: .secondary
-        case .syncing: .accentColor
-        case .success: .green
-        case .failure: .red
-        }
     }
 }

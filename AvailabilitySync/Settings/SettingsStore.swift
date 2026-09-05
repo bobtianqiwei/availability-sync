@@ -7,9 +7,11 @@ final class SettingsStore: ObservableObject {
     private enum Key {
         static let targetCalendarIdentifier = "targetCalendarIdentifier"
         static let calendarRules = "calendarRules"
+        static let pastRange = "pastRange"
         static let rangeMonths = "rangeMonths"
         static let syncIntervalMinutes = "syncIntervalMinutes"
         static let mergeDuplicates = "mergeDuplicates"
+        static let showMenuBarIcon = "showMenuBarIcon"
         static let launchAtLogin = "launchAtLogin"
         static let lastSyncDate = "lastSyncDate"
         static let managedTargetCalendarIdentifiers = "managedTargetCalendarIdentifiers"
@@ -25,6 +27,10 @@ final class SettingsStore: ObservableObject {
         didSet { saveCalendarRules() }
     }
 
+    @Published var pastRange: PastRange {
+        didSet { defaults.set(pastRange.rawValue, forKey: Key.pastRange) }
+    }
+
     @Published var rangeMonths: Int {
         didSet { defaults.set(rangeMonths, forKey: Key.rangeMonths) }
     }
@@ -35,6 +41,10 @@ final class SettingsStore: ObservableObject {
 
     @Published var mergeDuplicates: Bool {
         didSet { defaults.set(mergeDuplicates, forKey: Key.mergeDuplicates) }
+    }
+
+    @Published var showMenuBarIcon: Bool {
+        didSet { defaults.set(showMenuBarIcon, forKey: Key.showMenuBarIcon) }
     }
 
     @Published var launchAtLogin: Bool {
@@ -62,16 +72,24 @@ final class SettingsStore: ObservableObject {
             calendarRules = [:]
         }
 
+        pastRange = PastRange(rawValue: defaults.string(forKey: Key.pastRange) ?? "") ?? .oneWeek
+
         let savedRange = defaults.integer(forKey: Key.rangeMonths)
         rangeMonths = [1, 2, 4, 6, 12].contains(savedRange) ? savedRange : 4
 
         let savedInterval = defaults.integer(forKey: Key.syncIntervalMinutes)
-        syncIntervalMinutes = [15, 30, 60].contains(savedInterval) ? savedInterval : 15
+        syncIntervalMinutes = [1, 3, 5, 10, 15, 30, 60].contains(savedInterval) ? savedInterval : 15
 
         if defaults.object(forKey: Key.mergeDuplicates) == nil {
             mergeDuplicates = true
         } else {
             mergeDuplicates = defaults.bool(forKey: Key.mergeDuplicates)
+        }
+
+        if defaults.object(forKey: Key.showMenuBarIcon) == nil {
+            showMenuBarIcon = true
+        } else {
+            showMenuBarIcon = defaults.bool(forKey: Key.showMenuBarIcon)
         }
 
         launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
@@ -98,6 +116,7 @@ final class SettingsStore: ObservableObject {
         SyncSettings(
             targetCalendarIdentifier: targetCalendarIdentifier,
             calendarModes: calendarRules,
+            pastRange: pastRange,
             rangeMonths: rangeMonths,
             mergeDuplicates: mergeDuplicates,
             managedTargetCalendarIdentifiers: managedTargetCalendarIdentifiers.union([targetCalendarIdentifier])
