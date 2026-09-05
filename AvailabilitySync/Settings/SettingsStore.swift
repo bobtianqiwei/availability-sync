@@ -13,7 +13,6 @@ final class SettingsStore: ObservableObject {
         static let rangeMonths = "rangeMonths"
         static let syncIntervalMinutes = "syncIntervalMinutes"
         static let mergeDuplicates = "mergeDuplicates"
-        static let showMenuBarIcon = "showMenuBarIcon"
         static let launchAtLogin = "launchAtLogin"
         static let lastSyncDate = "lastSyncDate"
         static let managedTargetCalendarIdentifiers = "managedTargetCalendarIdentifiers"
@@ -58,10 +57,6 @@ final class SettingsStore: ObservableObject {
         didSet { defaults.set(mergeDuplicates, forKey: Key.mergeDuplicates) }
     }
 
-    @Published var showMenuBarIcon: Bool {
-        didSet { defaults.set(showMenuBarIcon, forKey: Key.showMenuBarIcon) }
-    }
-
     @Published var launchAtLogin: Bool {
         didSet { defaults.set(launchAtLogin, forKey: Key.launchAtLogin) }
     }
@@ -104,12 +99,6 @@ final class SettingsStore: ObservableObject {
             mergeDuplicates = true
         } else {
             mergeDuplicates = defaults.bool(forKey: Key.mergeDuplicates)
-        }
-
-        if defaults.object(forKey: Key.showMenuBarIcon) == nil {
-            showMenuBarIcon = true
-        } else {
-            showMenuBarIcon = defaults.bool(forKey: Key.showMenuBarIcon)
         }
 
         launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)

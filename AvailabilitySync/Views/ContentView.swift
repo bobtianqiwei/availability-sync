@@ -1,10 +1,13 @@
 // ContentView.swift developed by Bob Tianqi Wei
 
+import AppKit
 import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var settings: SettingsStore
+    @Binding var showMenuBarIcon: Bool
+    @Binding var showDockIcon: Bool
 
     var body: some View {
         Group {
@@ -17,6 +20,9 @@ struct ContentView: View {
         .background(Color(nsColor: .windowBackgroundColor))
         .task {
             model.start()
+        }
+        .onChange(of: showDockIcon) { _, isVisible in
+            NSApplication.shared.setActivationPolicy(isVisible ? .regular : .accessory)
         }
     }
 
@@ -164,7 +170,24 @@ struct ContentView: View {
             }
 
             Toggle("Merge duplicate events", isOn: $settings.mergeDuplicates)
-            Toggle("Show Menu Bar Icon", isOn: $settings.showMenuBarIcon)
+            Toggle("Show Menu Bar Icon", isOn: Binding(
+                get: { showMenuBarIcon },
+                set: { isVisible in
+                    showMenuBarIcon = isVisible
+                    if !isVisible {
+                        showDockIcon = true
+                    }
+                }
+            ))
+            Toggle("Show Dock Icon", isOn: Binding(
+                get: { showDockIcon },
+                set: { isVisible in
+                    showDockIcon = isVisible
+                    if !isVisible {
+                        showMenuBarIcon = true
+                    }
+                }
+            ))
             Toggle("Launch at Login", isOn: Binding(
                 get: { settings.launchAtLogin },
                 set: { model.setLaunchAtLogin($0) }
