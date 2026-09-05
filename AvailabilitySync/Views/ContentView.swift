@@ -64,16 +64,35 @@ struct ContentView: View {
 
     private var sourceSection: some View {
         SettingsSection(title: "Source Calendars", systemImage: "calendar") {
+            Text("Title keeps event names. Busy shows events as “Busy”. Ignore excludes the calendar.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
             if model.sourceCalendars.isEmpty {
                 Text("No source calendars are available.")
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 80)
             } else {
                 LazyVStack(spacing: 0) {
+                    HStack(spacing: 10) {
+                        Text("Calendar")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text("Buffer")
+                            .frame(width: 90)
+                        Text("Sync options")
+                            .frame(width: 180)
+                    }
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 10)
+                    Divider()
                     ForEach(Array(model.sourceCalendars.enumerated()), id: \.element.id) { index, calendar in
                         CalendarRuleRow(calendar: calendar, mode: Binding(
                             get: { settings.mode(for: calendar.id) },
                             set: { settings.setMode($0, for: calendar.id) }
+                        ), bufferEnabled: Binding(
+                            get: { settings.isBufferEnabled(for: calendar.id) },
+                            set: { settings.setBufferEnabled($0, for: calendar.id) }
                         ))
                         if index < model.sourceCalendars.count - 1 {
                             Divider().padding(.leading, 29)
@@ -88,7 +107,7 @@ struct ContentView: View {
                 }
             }
 
-            Text("New calendars default to Busy Only. The target calendar is always excluded.")
+            Text("New calendars default to Busy with no buffer. The target calendar is always excluded.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -96,25 +115,43 @@ struct ContentView: View {
 
     private var scheduleSection: some View {
         SettingsSection(title: "Sync Settings", systemImage: "gearshape") {
-            LabeledContent("Past range") {
-                Picker("Past range", selection: $settings.pastRange) {
-                    ForEach(PastRange.allCases) { range in
-                        Text(range.label).tag(range)
+            LabeledContent("Calendar sync range") {
+                HStack(spacing: 10) {
+                    Text("Past")
+                        .foregroundStyle(.secondary)
+                    Picker("Past", selection: $settings.pastRange) {
+                        ForEach(PastRange.allCases) { range in
+                            Text(range.label).tag(range)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 100)
+
+                    Text("Future")
+                        .foregroundStyle(.secondary)
+                    Picker("Future", selection: $settings.rangeMonths) {
+                        ForEach([1, 2, 4, 6, 12], id: \.self) { months in
+                            Text("\(months) \(months == 1 ? "month" : "months")").tag(months)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 105)
+                }
+            }
+
+            LabeledContent("Buffer time") {
+                Picker("Buffer time", selection: $settings.bufferMinutes) {
+                    ForEach([5, 10, 15, 30], id: \.self) { minutes in
+                        Text("\(minutes) min").tag(minutes)
                     }
                 }
                 .labelsHidden()
                 .frame(width: 140)
             }
 
-            LabeledContent("Future range") {
-                Picker("Future range", selection: $settings.rangeMonths) {
-                    ForEach([1, 2, 4, 6, 12], id: \.self) { months in
-                        Text("\(months) \(months == 1 ? "month" : "months")").tag(months)
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 140)
-            }
+            Text("Adds this time before and after events from calendars with Buffer enabled.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
             LabeledContent("Automatic sync") {
                 Picker("Automatic sync", selection: $settings.syncIntervalMinutes) {
@@ -244,21 +281,31 @@ private struct SettingsSection<Content: View>: View {
 private struct CalendarRuleRow: View {
     let calendar: CalendarInfo
     @Binding var mode: CalendarMode
+    @Binding var bufferEnabled: Bool
 
     var body: some View {
         HStack(spacing: 10) {
-            Circle()
-                .fill(calendar.color)
-                .frame(width: 10, height: 10)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(calendar.title)
-                    .lineLimit(1)
-                Text(calendar.sourceTitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(calendar.color)
+                    .frame(width: 10, height: 10)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(calendar.title)
+                        .lineLimit(1)
+                    Text(calendar.sourceTitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Toggle("Buffer", isOn: $bufferEnabled)
+                .labelsHidden()
+                .toggleStyle(.checkbox)
+                .frame(width: 90)
+                .disabled(mode == .ignore)
+
             Picker("Mode", selection: $mode) {
                 ForEach(CalendarMode.allCases) { mode in
                     Text(mode.label).tag(mode)
@@ -266,7 +313,7 @@ private struct CalendarRuleRow: View {
             }
             .labelsHidden()
             .pickerStyle(.segmented)
-            .frame(width: 250)
+            .frame(width: 180)
         }
         .padding(.vertical, 8)
     }

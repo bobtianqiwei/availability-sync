@@ -84,13 +84,17 @@ final class SyncEngine {
             let title = revealsTitle ? rawTitle : "Busy"
             let itemIdentifier = event.eventIdentifier ?? event.calendarItemIdentifier
             let identity = "\(event.calendar.calendarIdentifier)|\(itemIdentifier)"
+            let usesBuffer = settings.bufferEnabledCalendarIdentifiers.contains(
+                event.calendar.calendarIdentifier
+            )
+            let buffer = TimeInterval(usesBuffer ? settings.bufferMinutes * 60 : 0)
 
             return SourceOccurrence(
                 identity: identity,
                 title: title,
-                start: start,
-                end: end,
-                isAllDay: event.isAllDay,
+                start: start.addingTimeInterval(-buffer),
+                end: end.addingTimeInterval(buffer),
+                isAllDay: event.isAllDay && buffer == 0,
                 revealsTitle: revealsTitle
             )
         }

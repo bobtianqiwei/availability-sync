@@ -29,8 +29,8 @@ enum CalendarMode: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .showTitle: "Show Title"
-        case .busyOnly: "Busy Only"
+        case .showTitle: "Title"
+        case .busyOnly: "Busy"
         case .ignore: "Ignore"
         }
     }
@@ -60,6 +60,8 @@ struct CalendarInfo: Hashable, Identifiable {
 struct SyncSettings: Sendable {
     let targetCalendarIdentifier: String
     let calendarModes: [String: CalendarMode]
+    let bufferMinutes: Int
+    let bufferEnabledCalendarIdentifiers: Set<String>
     let pastRange: PastRange
     let rangeMonths: Int
     let mergeDuplicates: Bool

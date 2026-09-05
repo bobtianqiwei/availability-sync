@@ -7,6 +7,8 @@ final class SettingsStore: ObservableObject {
     private enum Key {
         static let targetCalendarIdentifier = "targetCalendarIdentifier"
         static let calendarRules = "calendarRules"
+        static let bufferMinutes = "bufferMinutes"
+        static let bufferEnabledCalendarIdentifiers = "bufferEnabledCalendarIdentifiers"
         static let pastRange = "pastRange"
         static let rangeMonths = "rangeMonths"
         static let syncIntervalMinutes = "syncIntervalMinutes"
@@ -29,6 +31,19 @@ final class SettingsStore: ObservableObject {
 
     @Published var pastRange: PastRange {
         didSet { defaults.set(pastRange.rawValue, forKey: Key.pastRange) }
+    }
+
+    @Published var bufferMinutes: Int {
+        didSet { defaults.set(bufferMinutes, forKey: Key.bufferMinutes) }
+    }
+
+    @Published private(set) var bufferEnabledCalendarIdentifiers: Set<String> {
+        didSet {
+            defaults.set(
+                Array(bufferEnabledCalendarIdentifiers),
+                forKey: Key.bufferEnabledCalendarIdentifiers
+            )
+        }
     }
 
     @Published var rangeMonths: Int {
@@ -64,6 +79,11 @@ final class SettingsStore: ObservableObject {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         targetCalendarIdentifier = defaults.string(forKey: Key.targetCalendarIdentifier) ?? ""
+        let savedBufferMinutes = defaults.integer(forKey: Key.bufferMinutes)
+        bufferMinutes = [5, 10, 15, 30].contains(savedBufferMinutes) ? savedBufferMinutes : 15
+        bufferEnabledCalendarIdentifiers = Set(
+            defaults.stringArray(forKey: Key.bufferEnabledCalendarIdentifiers) ?? []
+        )
 
         if let data = defaults.data(forKey: Key.calendarRules),
            let decoded = try? JSONDecoder().decode([String: CalendarMode].self, from: data) {
@@ -112,10 +132,24 @@ final class SettingsStore: ObservableObject {
         managedTargetCalendarIdentifiers.insert(targetCalendarIdentifier)
     }
 
+    func isBufferEnabled(for calendarIdentifier: String) -> Bool {
+        bufferEnabledCalendarIdentifiers.contains(calendarIdentifier)
+    }
+
+    func setBufferEnabled(_ enabled: Bool, for calendarIdentifier: String) {
+        if enabled {
+            bufferEnabledCalendarIdentifiers.insert(calendarIdentifier)
+        } else {
+            bufferEnabledCalendarIdentifiers.remove(calendarIdentifier)
+        }
+    }
+
     func syncSettings() -> SyncSettings {
         SyncSettings(
             targetCalendarIdentifier: targetCalendarIdentifier,
             calendarModes: calendarRules,
+            bufferMinutes: bufferMinutes,
+            bufferEnabledCalendarIdentifiers: bufferEnabledCalendarIdentifiers,
             pastRange: pastRange,
             rangeMonths: rangeMonths,
             mergeDuplicates: mergeDuplicates,
