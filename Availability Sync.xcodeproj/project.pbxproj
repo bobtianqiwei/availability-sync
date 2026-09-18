@@ -21,6 +21,7 @@
 		A1000000000000000000000C /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000F /* MenuBarView.swift */; };
 		A1000000000000000000000D /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* AppIcon.icon */; };
 		A1000000000000000000000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* Assets.xcassets */; };
+		A1000000000000000000000F /* ManagedEventMappingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* ManagedEventMappingStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		A2000000000000000000000F /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		A20000000000000000000011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000000000000000000012 /* ManagedEventMappingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedEventMappingStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +121,7 @@
 				A20000000000000000000006 /* LaunchAtLoginManager.swift */,
 				A20000000000000000000007 /* SyncEngine.swift */,
 				A20000000000000000000008 /* SyncPlanner.swift */,
+				A20000000000000000000012 /* ManagedEventMappingStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -277,6 +280,7 @@
 				A10000000000000000000009 /* SettingsStore.swift in Sources */,
 				A1000000000000000000000A /* ContentView.swift in Sources */,
 				A1000000000000000000000C /* MenuBarView.swift in Sources */,
+				A1000000000000000000000F /* ManagedEventMappingStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

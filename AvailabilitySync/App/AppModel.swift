@@ -21,7 +21,10 @@ final class AppModel: ObservableObject {
         let eventKit = EventKitManager()
         self.settings = settings
         self.eventKit = eventKit
-        syncEngine = SyncEngine(eventStore: eventKit.eventStore)
+        syncEngine = SyncEngine(
+            eventStore: eventKit.eventStore,
+            mappingStore: ManagedEventMappingStore()
+        )
 
         settings.$syncIntervalMinutes
             .dropFirst()

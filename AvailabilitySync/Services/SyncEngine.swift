@@ -22,9 +22,11 @@ enum SyncEngineError: LocalizedError {
 @MainActor
 final class SyncEngine {
     private let eventStore: EKEventStore
+    private let mappingStore: ManagedEventMappingStore
 
-    init(eventStore: EKEventStore) {
+    init(eventStore: EKEventStore, mappingStore: ManagedEventMappingStore) {
         self.eventStore = eventStore
+        self.mappingStore = mappingStore
     }
 
     func sync(using settings: SyncSettings) throws -> SyncResult {
@@ -70,7 +72,7 @@ final class SyncEngine {
         let occurrences = sourceEvents.compactMap { event -> SourceOccurrence? in
             guard event.status != .canceled,
                   event.availability != .free,
-                  !ManagedEventMarker.isManaged(event.notes),
+                  !isManaged(event),
                   let start = event.startDate,
                   let end = event.endDate else {
                 return nil
@@ -87,14 +89,16 @@ final class SyncEngine {
             let usesBuffer = settings.bufferEnabledCalendarIdentifiers.contains(
                 event.calendar.calendarIdentifier
             )
-            let buffer = TimeInterval(usesBuffer ? settings.bufferMinutes * 60 : 0)
+            let buffer = TimeInterval(
+                usesBuffer && !event.isAllDay ? settings.bufferMinutes * 60 : 0
+            )
 
             return SourceOccurrence(
                 identity: identity,
                 title: title,
                 start: start.addingTimeInterval(-buffer),
                 end: end.addingTimeInterval(buffer),
-                isAllDay: event.isAllDay && buffer == 0,
+                isAllDay: event.isAllDay,
                 revealsTitle: revealsTitle
             )
         }
@@ -107,6 +111,7 @@ final class SyncEngine {
         var updated = 0
         var deleted = 0
         var unchanged = 0
+        var pendingMappings: [String: EKEvent] = [:]
 
         for identifier in settings.managedTargetCalendarIdentifiers where identifier != targetCalendar.calendarIdentifier {
             guard let oldTarget = eventStore.calendar(withIdentifier: identifier) else { continue }
@@ -127,9 +132,24 @@ final class SyncEngine {
         var legacyEvents: [EKEvent] = []
 
         for event in targetEvents {
+            if let syncIdentifier = mappingStore.syncIdentifier(
+                for: event.calendarItemIdentifier,
+                calendarIdentifier: targetCalendar.calendarIdentifier
+            ) {
+                existingByMarker[syncIdentifier, default: []].append(event)
+                continue
+            }
+
             guard let notes = event.notes else { continue }
             if notes.hasPrefix(ManagedEventMarker.currentPrefix) {
                 existingByMarker[notes, default: []].append(event)
+                mappingStore.set(
+                    ManagedEventReference(
+                        eventIdentifier: event.calendarItemIdentifier,
+                        calendarIdentifier: targetCalendar.calendarIdentifier
+                    ),
+                    for: notes
+                )
             } else if ManagedEventMarker.legacyPrefixes.contains(where: { notes.hasPrefix($0) }) {
                 legacyEvents.append(event)
             }
@@ -147,6 +167,7 @@ final class SyncEngine {
 
                 for duplicate in matches {
                     try eventStore.remove(duplicate, span: .thisEvent, commit: false)
+                    removeMapping(for: duplicate)
                     deleted += 1
                 }
             } else {
@@ -156,9 +177,10 @@ final class SyncEngine {
                 event.startDate = desiredEvent.start
                 event.endDate = desiredEvent.end
                 event.isAllDay = desiredEvent.isAllDay
-                event.notes = desiredEvent.marker
+                event.notes = ManagedEventNote.text
                 event.availability = .busy
                 try eventStore.save(event, span: .thisEvent, commit: false)
+                pendingMappings[marker] = event
                 created += 1
             }
         }
@@ -166,16 +188,28 @@ final class SyncEngine {
         for events in existingByMarker.values {
             for event in events {
                 try eventStore.remove(event, span: .thisEvent, commit: false)
+                removeMapping(for: event)
                 deleted += 1
             }
         }
 
         for event in legacyEvents {
             try eventStore.remove(event, span: .thisEvent, commit: false)
+            removeMapping(for: event)
             deleted += 1
         }
 
         try eventStore.commit()
+        for (syncIdentifier, event) in pendingMappings {
+            mappingStore.set(
+                ManagedEventReference(
+                    eventIdentifier: event.calendarItemIdentifier,
+                    calendarIdentifier: targetCalendar.calendarIdentifier
+                ),
+                for: syncIdentifier
+            )
+        }
+        mappingStore.save()
         return SyncResult(
             sourceOccurrences: sourceEvents.count,
             desiredEvents: desired.count,
@@ -188,11 +222,16 @@ final class SyncEngine {
 
     private func removeManagedEvents(from calendar: EKCalendar, start: Date, end: Date) throws -> Int {
         let predicate = eventStore.predicateForEvents(withStart: start, end: end, calendars: [calendar])
-        let managedEvents = eventStore.events(matching: predicate).filter {
-            ManagedEventMarker.isManaged($0.notes)
+        let mappedIdentifiers = Set(
+            mappingStore.references(for: calendar.calendarIdentifier).values.map(\.eventIdentifier)
+        )
+        let managedEvents = eventStore.events(matching: predicate).filter { event in
+            mappedIdentifiers.contains(event.calendarItemIdentifier) ||
+            ManagedEventMarker.isManaged(event.notes)
         }
         for event in managedEvents {
             try eventStore.remove(event, span: .thisEvent, commit: false)
+            removeMapping(for: event)
         }
         return managedEvents.count
     }
@@ -217,8 +256,8 @@ final class SyncEngine {
             event.calendar = targetCalendar
             changed = true
         }
-        if event.notes != desired.marker {
-            event.notes = desired.marker
+        if event.notes != ManagedEventNote.text {
+            event.notes = ManagedEventNote.text
             changed = true
         }
         if event.availability != .busy {
@@ -246,6 +285,22 @@ final class SyncEngine {
             changed = true
         }
         return changed
+    }
+
+    private func removeMapping(for event: EKEvent) {
+        guard let syncIdentifier = mappingStore.syncIdentifier(
+            for: event.calendarItemIdentifier,
+            calendarIdentifier: event.calendar.calendarIdentifier
+        ) else { return }
+        mappingStore.remove(syncIdentifier: syncIdentifier)
+    }
+
+    private func isManaged(_ event: EKEvent) -> Bool {
+        ManagedEventMarker.isManaged(event.notes) ||
+        mappingStore.syncIdentifier(
+            for: event.calendarItemIdentifier,
+            calendarIdentifier: event.calendar.calendarIdentifier
+        ) != nil
     }
 
     private func assign(_ value: String, to destination: inout String!) -> Bool {

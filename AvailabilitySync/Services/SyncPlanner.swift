@@ -40,6 +40,13 @@ enum ManagedEventMarker {
     }
 }
 
+enum ManagedEventNote {
+    static let text = """
+    This event was automatically synced from another calendar using Availability Sync, an open-source tool developed by Bob Tianqi Wei.
+    GitHub: https://github.com/bobtianqiwei/availability-sync
+    """
+}
+
 enum SyncPlanner {
     private struct IntervalKey: Hashable {
         let startSecond: Int64
