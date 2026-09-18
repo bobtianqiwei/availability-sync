@@ -130,6 +130,7 @@ final class SyncEngine {
         let targetEvents = eventStore.events(matching: targetPredicate)
         var existingByMarker: [String: [EKEvent]] = [:]
         var legacyEvents: [EKEvent] = []
+        var unmarkedManagedEvents: [EKEvent] = []
 
         for event in targetEvents {
             if let syncIdentifier = mappingStore.syncIdentifier(
@@ -150,9 +151,30 @@ final class SyncEngine {
                     ),
                     for: notes
                 )
+            } else if notes == ManagedEventNote.text {
+                unmarkedManagedEvents.append(event)
             } else if ManagedEventMarker.legacyPrefixes.contains(where: { notes.hasPrefix($0) }) {
                 legacyEvents.append(event)
             }
+        }
+
+        for event in unmarkedManagedEvents {
+            guard let marker = bestMatchingMarker(
+                for: event,
+                desired: desired,
+                existingByMarker: existingByMarker
+            ) else {
+                legacyEvents.append(event)
+                continue
+            }
+            existingByMarker[marker, default: []].append(event)
+            mappingStore.set(
+                ManagedEventReference(
+                    eventIdentifier: event.calendarItemIdentifier,
+                    calendarIdentifier: targetCalendar.calendarIdentifier
+                ),
+                for: marker
+            )
         }
 
         for (marker, desiredEvent) in desired {
@@ -170,6 +192,13 @@ final class SyncEngine {
                     removeMapping(for: duplicate)
                     deleted += 1
                 }
+                mappingStore.set(
+                    ManagedEventReference(
+                        eventIdentifier: existing.calendarItemIdentifier,
+                        calendarIdentifier: targetCalendar.calendarIdentifier
+                    ),
+                    for: marker
+                )
             } else {
                 let event = EKEvent(eventStore: eventStore)
                 event.calendar = targetCalendar
@@ -227,6 +256,7 @@ final class SyncEngine {
         )
         let managedEvents = eventStore.events(matching: predicate).filter { event in
             mappedIdentifiers.contains(event.calendarItemIdentifier) ||
+            event.notes == ManagedEventNote.text ||
             ManagedEventMarker.isManaged(event.notes)
         }
         for event in managedEvents {
@@ -287,6 +317,27 @@ final class SyncEngine {
         return changed
     }
 
+    private func bestMatchingMarker(
+        for event: EKEvent,
+        desired: [String: DesiredEvent],
+        existingByMarker: [String: [EKEvent]]
+    ) -> String? {
+        desired
+            .filter { _, candidate in
+                candidate.title == event.title &&
+                abs(candidate.start.timeIntervalSince(event.startDate)) < 1 &&
+                abs(candidate.end.timeIntervalSince(event.endDate)) < 1 &&
+                candidate.isAllDay == event.isAllDay
+            }
+            .map(\.key)
+            .sorted { left, right in
+                let leftCount = existingByMarker[left]?.count ?? 0
+                let rightCount = existingByMarker[right]?.count ?? 0
+                return leftCount == rightCount ? left < right : leftCount < rightCount
+            }
+            .first
+    }
+
     private func removeMapping(for event: EKEvent) {
         guard let syncIdentifier = mappingStore.syncIdentifier(
             for: event.calendarItemIdentifier,
@@ -296,6 +347,7 @@ final class SyncEngine {
     }
 
     private func isManaged(_ event: EKEvent) -> Bool {
+        event.notes == ManagedEventNote.text ||
         ManagedEventMarker.isManaged(event.notes) ||
         mappingStore.syncIdentifier(
             for: event.calendarItemIdentifier,
