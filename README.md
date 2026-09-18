@@ -4,6 +4,12 @@ Availability Sync is a macOS utility for sharing your availability with coworker
 
 The app works with calendar accounts already added to macOS. All processing happens locally through EventKit. There is no server, account login, analytics, or telemetry.
 
+## Download
+
+[Download Availability Sync for macOS](https://github.com/bobtianqiwei/availability-sync/releases/latest/download/Availability-Sync.zip)
+
+Unzip the download, then drag `Availability Sync.app` into Applications.
+
 ## Features
 
 - Sync multiple source calendars into one target calendar
@@ -29,7 +35,7 @@ The target calendar is never used as a source. Availability Sync only updates ev
 
 ## Privacy
 
-`Busy` events include only the start time, end time, availability, and an opaque sync marker. They never copy the original title, calendar name, account name, notes, location, URL, attendees, organizer, or alarms.
+`Busy` events include only the start time, end time, availability, and a public note explaining that Availability Sync created the event. They never copy the original title, calendar name, account name, source notes, location, URL, attendees, organizer, or alarms. Sync matching information stays local to the app.
 
 Calendar data stays in EventKit and in the calendar accounts already configured on your Mac.
 
