@@ -1,12 +1,14 @@
 // MenuBarView.swift developed by Bob Tianqi Wei
 
 import AppKit
+import Sparkle
 import SwiftUI
 
 struct MenuBarView: View {
     @Environment(\.openWindow) private var openWindow
     @ObservedObject var model: AppModel
     @ObservedObject var settings: SettingsStore
+    let updater: SPUUpdater
 
     var body: some View {
         Text(lastSyncText)
@@ -20,12 +22,14 @@ struct MenuBarView: View {
         }
         .disabled(!model.canSync)
 
-        Button {
-            openWindow(id: "main")
+            Button {
+                openWindow(id: "main")
             NSApplication.shared.activate(ignoringOtherApps: true)
             } label: {
                 Label("Open Availability Sync", systemImage: "macwindow")
             }
+
+            CheckForUpdatesView(updater: updater)
 
             Divider()
 

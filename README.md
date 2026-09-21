@@ -17,6 +17,7 @@ Unzip the download, then drag `Availability Sync.app` into Applications.
 - Add a 5, 10, 15, or 30 minute buffer to selected calendars
 - Configure past and future sync ranges
 - Sync automatically while the app is running
+- Check for, download, and install app updates automatically
 - Handle recurring, updated, and deleted events
 - Merge duplicate events and launch at login
 

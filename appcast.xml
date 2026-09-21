@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Availability Sync</title>
+        <item>
+            <title>1.1</title>
+            <pubDate>Mon, 21 Sep 2026 15:37:49 -0400</pubDate>
+            <link>https://github.com/bobtianqiwei/availability-sync</link>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure
+                url="https://github.com/bobtianqiwei/availability-sync/releases/download/v1.1.0/Availability-Sync.zip"
+                length="2261719"
+                type="application/octet-stream"
+                sparkle:edSignature="dX8avwITWHOUPkUbPkJEcC8eWZnamRv3Kp+I5cL8NaX2f7aAFq1e3LHmLN7BwbC+x9+IJ0hThVUmsiWOc7MTDA=="/>
+        </item>
+    </channel>
+</rss>
