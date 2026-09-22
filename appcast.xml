@@ -3,6 +3,15 @@
     <channel>
         <title>Availability Sync</title>
         <item>
+            <title>1.2</title>
+            <pubDate>Mon, 21 Sep 2026 21:50:52 -0400</pubDate>
+            <link>https://github.com/bobtianqiwei/availability-sync</link>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/bobtianqiwei/availability-sync/releases/download/v1.2.0/Availability-Sync.zip" length="3251994" type="application/octet-stream" sparkle:edSignature="4f2Yb3Aob1VH9CoauwozJl1eFV8jRa7oPkyA6tTnss6RycA+nzUcrBxg4cOeG6Ostx1KbWb3zfxp4N5uyjKCCQ=="/>
+        </item>
+        <item>
             <title>1.1</title>
             <pubDate>Mon, 21 Sep 2026 15:37:49 -0400</pubDate>
             <link>https://github.com/bobtianqiwei/availability-sync</link>
