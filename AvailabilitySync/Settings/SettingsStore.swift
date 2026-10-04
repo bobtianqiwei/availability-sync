@@ -13,6 +13,7 @@ final class SettingsStore: ObservableObject {
         static let rangeMonths = "rangeMonths"
         static let syncIntervalMinutes = "syncIntervalMinutes"
         static let mergeDuplicates = "mergeDuplicates"
+        static let deleteEventsBeforeSyncRange = "deleteEventsBeforeSyncRange"
         static let launchAtLogin = "launchAtLogin"
         static let lastSyncDate = "lastSyncDate"
         static let managedTargetCalendarIdentifiers = "managedTargetCalendarIdentifiers"
@@ -55,6 +56,15 @@ final class SettingsStore: ObservableObject {
 
     @Published var mergeDuplicates: Bool {
         didSet { defaults.set(mergeDuplicates, forKey: Key.mergeDuplicates) }
+    }
+
+    @Published var deleteEventsBeforeSyncRange: Bool {
+        didSet {
+            defaults.set(
+                deleteEventsBeforeSyncRange,
+                forKey: Key.deleteEventsBeforeSyncRange
+            )
+        }
     }
 
     @Published var launchAtLogin: Bool {
@@ -101,6 +111,8 @@ final class SettingsStore: ObservableObject {
             mergeDuplicates = defaults.bool(forKey: Key.mergeDuplicates)
         }
 
+        deleteEventsBeforeSyncRange = defaults.bool(forKey: Key.deleteEventsBeforeSyncRange)
+
         launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
         lastSyncDate = defaults.object(forKey: Key.lastSyncDate) as? Date
         managedTargetCalendarIdentifiers = Set(
@@ -142,6 +154,7 @@ final class SettingsStore: ObservableObject {
             pastRange: pastRange,
             rangeMonths: rangeMonths,
             mergeDuplicates: mergeDuplicates,
+            deleteEventsBeforeSyncRange: deleteEventsBeforeSyncRange,
             managedTargetCalendarIdentifiers: managedTargetCalendarIdentifiers.union([targetCalendarIdentifier])
         )
     }

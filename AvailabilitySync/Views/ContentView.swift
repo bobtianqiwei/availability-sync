@@ -170,6 +170,13 @@ struct ContentView: View {
             }
 
             Toggle("Merge duplicate events", isOn: $settings.mergeDuplicates)
+            Toggle(
+                "Delete synced events before range",
+                isOn: $settings.deleteEventsBeforeSyncRange
+            )
+            Text("When enabled, removes synced events before the selected Past range.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Toggle("Show Menu Bar Icon", isOn: Binding(
                 get: { showMenuBarIcon },
                 set: { isVisible in

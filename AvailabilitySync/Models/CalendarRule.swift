@@ -65,5 +65,6 @@ struct SyncSettings: Sendable {
     let pastRange: PastRange
     let rangeMonths: Int
     let mergeDuplicates: Bool
+    let deleteEventsBeforeSyncRange: Bool
     let managedTargetCalendarIdentifiers: Set<String>
 }

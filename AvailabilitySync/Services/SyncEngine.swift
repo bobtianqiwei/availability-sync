@@ -54,7 +54,6 @@ final class SyncEngine {
             to: now
         ),
               let rangeEnd = calendar.date(byAdding: .month, value: settings.rangeMonths, to: now),
-              let cleanupStart = calendar.date(byAdding: .month, value: -1, to: now),
               let cleanupEnd = calendar.date(byAdding: .month, value: 13, to: now) else {
             throw SyncEngineError.dateRangeUnavailable
         }
@@ -113,17 +112,24 @@ final class SyncEngine {
         var unchanged = 0
         var pendingMappings: [String: EKEvent] = [:]
 
+        if settings.deleteEventsBeforeSyncRange {
+            for identifier in settings.managedTargetCalendarIdentifiers {
+                guard let managedCalendar = eventStore.calendar(withIdentifier: identifier) else { continue }
+                deleted += try removeMappedEvents(before: rangeStart, from: managedCalendar)
+            }
+        }
+
         for identifier in settings.managedTargetCalendarIdentifiers where identifier != targetCalendar.calendarIdentifier {
             guard let oldTarget = eventStore.calendar(withIdentifier: identifier) else { continue }
             deleted += try removeManagedEvents(
                 from: oldTarget,
-                start: cleanupStart,
+                start: rangeStart,
                 end: cleanupEnd
             )
         }
 
         let targetPredicate = eventStore.predicateForEvents(
-            withStart: cleanupStart,
+            withStart: rangeStart,
             end: cleanupEnd,
             calendars: [targetCalendar]
         )
@@ -264,6 +270,28 @@ final class SyncEngine {
             removeMapping(for: event)
         }
         return managedEvents.count
+    }
+
+    private func removeMappedEvents(before date: Date, from calendar: EKCalendar) throws -> Int {
+        var removed = 0
+        for (syncIdentifier, reference) in mappingStore.references(
+            for: calendar.calendarIdentifier
+        ) {
+            guard let event = eventStore.calendarItem(
+                withIdentifier: reference.eventIdentifier
+            ) as? EKEvent else {
+                mappingStore.remove(syncIdentifier: syncIdentifier)
+                continue
+            }
+            guard event.calendar.calendarIdentifier == calendar.calendarIdentifier,
+                  event.endDate <= date else {
+                continue
+            }
+            try eventStore.remove(event, span: .thisEvent, commit: false)
+            mappingStore.remove(syncIdentifier: syncIdentifier)
+            removed += 1
+        }
+        return removed
     }
 
     private func apply(_ desired: DesiredEvent, to event: EKEvent, targetCalendar: EKCalendar) -> Bool {
