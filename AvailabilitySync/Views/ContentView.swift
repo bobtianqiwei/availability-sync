@@ -18,9 +18,6 @@ struct ContentView: View {
             }
         }
         .background(Color(nsColor: .windowBackgroundColor))
-        .task {
-            model.start()
-        }
         .onChange(of: showDockIcon) { _, isVisible in
             NSApplication.shared.setActivationPolicy(isVisible ? .regular : .accessory)
         }

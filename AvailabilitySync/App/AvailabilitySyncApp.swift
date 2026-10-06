@@ -29,11 +29,15 @@ struct CheckForUpdatesView: View {
     }
 }
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    let model = AppModel()
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let defaults = UserDefaults.standard
         let showsDockIcon = defaults.bool(forKey: "showDockIcon")
         NSApplication.shared.setActivationPolicy(showsDockIcon ? .regular : .accessory)
+        model.start()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -44,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @main
 struct AvailabilitySyncApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @StateObject private var model = AppModel()
+    private var model: AppModel { appDelegate.model }
     @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
     @AppStorage("showDockIcon") private var showDockIcon = false
     private let updaterController = SPUStandardUpdaterController(
