@@ -65,7 +65,7 @@ struct AvailabilitySyncApp: App {
                 showMenuBarIcon: $showMenuBarIcon,
                 showDockIcon: $showDockIcon
             )
-                .frame(minWidth: 560, minHeight: 620)
+                .frame(minWidth: 480, minHeight: 620)
         }
         .defaultSize(width: 600, height: 720)
         .commands {

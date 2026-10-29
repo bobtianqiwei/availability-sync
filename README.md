@@ -1,60 +1,34 @@
 # Availability Sync
 
-Availability Sync is a macOS utility for sharing your availability with coworkers. It copies busy time from personal calendars into the work calendar connected to your work email account, so your team can see when you are unavailable without seeing private event details.
+A macOS utility for sharing availability with coworkers. Copy busy time from personal calendars into your work calendar while keeping private details private.
 
-The app works with calendar accounts already added to macOS. All processing happens locally through EventKit. There is no server, account login, analytics, or telemetry.
+[Download for macOS 14+](https://github.com/bobtianqiwei/availability-sync/releases/latest/download/Availability-Sync.zip). Unzip and move Availability Sync.app to Applications.
 
-## Download
+## Use
 
-[Download Availability Sync for macOS](https://github.com/bobtianqiwei/availability-sync/releases/latest/download/Availability-Sync.zip)
+Grant Full Calendar Access, choose a target, and select **Title**, **Busy**, or **Ignore** for each source calendar. Title keeps event names; Busy hides them. Click **Sync Now**, or sync automatically while the app is running.
 
-Unzip the download, then drag `Availability Sync.app` into Applications.
+- Set past and future ranges, sync intervals, and per-calendar buffers.
+- Sync recurring and multi-day all-day events, merge duplicates, and filter all-day events by keywords.
+- Keep older synced events by default, with optional cleanup.
+- Use the menu bar, hide the Dock icon, and launch at login.
+- Optionally share general settings through iCloud and install app updates automatically.
 
-## Features
+Calendar choices and per-calendar rules stay on each Mac. Use one Mac to sync events to each target calendar to avoid conflicts.
 
-- Sync multiple source calendars into one target calendar
-- Choose `Title`, `Busy`, or `Ignore` for each source calendar
-- Add a 5, 10, 15, or 30 minute buffer to selected calendars
-- Configure past and future sync ranges
-- Sync automatically while the app is running
-- Check for, download, and install app updates automatically
-- Handle recurring, updated, and deleted events
-- Merge duplicate events and launch at login
+## Screenshots
 
-## Usage
-
-1. Grant Full Calendar Access.
-2. Choose your work calendar as the target.
-3. Configure each source calendar:
-   - `Title` keeps event names.
-   - `Busy` replaces event names with `Busy`.
-   - `Ignore` excludes the calendar.
-4. Enable Buffer for calendars that need extra time before and after events.
-5. Click `Sync Now`.
-
-The target calendar is never used as a source. Availability Sync only updates events it created and leaves unrelated target events untouched.
+<img src="docs/screenshots/calendars.png" alt="Calendars" width="32%"> <img src="docs/screenshots/sync-rules.png" alt="Sync Rules" width="32%"> <img src="docs/screenshots/general.png" alt="General" width="32%">
 
 ## Privacy
 
-`Busy` events include only the start time, end time, availability, and a public note explaining that Availability Sync created the event. They never copy the original title, calendar name, account name, source notes, location, URL, attendees, organizer, or alarms. Sync matching information stays local to the app.
+Calendar processing runs locally through EventKit using accounts already added to macOS. There is no app account, server, analytics, or telemetry. Busy events omit source titles, notes, locations, attendees, and account details. The target is excluded from sources; unrelated target events are left untouched.
 
-Calendar data stays in EventKit and in the calendar accounts already configured on your Mac.
-
-## iCloud settings
-
-Enable `Sync settings with iCloud` on Macs using the same Apple Account. It shares sync ranges, interval, buffer time, all-day blocked words, duplicate merging, and the option to delete older synced events. When enabled, existing iCloud values take priority; later changes sync automatically and may take time to arrive.
-
-Calendar choices, per-calendar rules, event mappings, last sync time, login startup, and icon preferences stay on each Mac. No event data is uploaded to iCloud by this feature. Keep only one Mac syncing events to a given target calendar to avoid conflicting changes. Turning off settings sync keeps local settings and leaves the iCloud copy available to other Macs.
+Optional iCloud sync shares general settings, including blocked words, without uploading event data or event mappings.
 
 ## Build
 
-1. Open `Availability Sync.xcodeproj` in Xcode 26.4 or later.
-2. Select the `Availability Sync` scheme and `My Mac`.
-3. Press Run.
-
-For iCloud settings sync, select your paid Apple Developer team and enable **iCloud → Key-value storage** in Signing & Capabilities for this app's identifier. Regenerate the provisioning profile if needed. All builds must use the same team and iCloud key-value store identifier. Unsigned builds can test local behavior, but cannot verify real iCloud delivery.
-
-If Calendar access was previously denied, enable it in **System Settings → Privacy & Security → Calendars**.
+Open `Availability Sync.xcodeproj` in Xcode, select Availability Sync and My Mac, then Run. For iCloud, select your Apple Developer team and enable **iCloud → Key-value storage** in Signing & Capabilities. Use the same team and key-value store identifier across builds.
 
 ## License
 
