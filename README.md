@@ -6,19 +6,19 @@ Share your availability with coworkers by copying busy time from personal calend
 
 ## Calendars
 
-<img src="docs/screenshots/calendars.png" alt="Calendars" height="380">
+<img src="docs/screenshots/calendars.png" alt="Calendars" height="520">
 
 Grant Full Calendar Access and choose a target calendar. Select **Title** to keep event names, **Busy** to hide them, or **Ignore** to exclude a source. Enable Buffer where needed. Drag calendar names to reorder them; the insertion line shows where they will go.
 
 ## Sync Rules
 
-<img src="docs/screenshots/sync-rules.png" alt="Sync Rules" height="380">
+<img src="docs/screenshots/sync-rules.png" alt="Sync Rules" height="520">
 
 Set past and future ranges, automatic sync intervals, and buffer time. Merge duplicates and filter all-day events by keywords. Recurring and multi-day all-day events are supported. Older synced events are kept by default, with optional cleanup. Click **Sync Now** at any time.
 
 ## General
 
-<img src="docs/screenshots/general.png" alt="General" height="380">
+<img src="docs/screenshots/general.png" alt="General" height="520">
 
 Run from the menu bar, choose whether to show the Dock icon, and launch at login. Automatic syncing continues while the app is running. App updates can be downloaded and installed automatically.
 
