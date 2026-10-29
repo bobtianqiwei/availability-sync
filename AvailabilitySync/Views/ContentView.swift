@@ -118,6 +118,14 @@ struct ContentView: View {
 
     private var scheduleSection: some View {
         SettingsSection(title: "Sync Settings", systemImage: "gearshape") {
+            Toggle("Sync settings with iCloud", isOn: $settings.iCloudSyncEnabled)
+            Text(settings.iCloudSyncEnabled ? settings.iCloudStatus : "Settings sync is off.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text("Shares range, interval, buffer time, blocked words, and cleanup options. Calendar choices and rules stay on this Mac. Use only one Mac to sync events to the same target calendar.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
             LabeledContent("Calendar sync range") {
                 HStack(spacing: 10) {
                     Text("Past")
@@ -167,6 +175,14 @@ struct ContentView: View {
             }
 
             Toggle("Merge duplicate events", isOn: $settings.mergeDuplicates)
+            LabeledContent("All-day blocked words") {
+                TextField("birthday, 生日", text: $settings.allDayBlockedWords)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 260)
+            }
+            Text("Skip all-day events whose titles contain any of these words. Separate with commas. Leave empty to disable.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Toggle(
                 "Delete synced events before range",
                 isOn: $settings.deleteEventsBeforeSyncRange

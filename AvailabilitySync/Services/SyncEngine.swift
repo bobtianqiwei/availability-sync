@@ -70,7 +70,12 @@ final class SyncEngine {
         let sourceEvents = eventStore.events(matching: sourcePredicate)
         let occurrences = sourceEvents.compactMap { event -> SourceOccurrence? in
             guard event.status != .canceled,
-                  event.availability != .free,
+                  SyncPlanner.shouldInclude(
+                    title: event.title ?? "",
+                    isAllDay: event.isAllDay,
+                    isFree: event.availability == .free,
+                    blockedWords: settings.allDayBlockedWords
+                  ),
                   !isManaged(event),
                   let start = event.startDate,
                   let end = event.endDate else {

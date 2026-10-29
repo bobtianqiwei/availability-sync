@@ -48,6 +48,16 @@ enum ManagedEventNote {
 }
 
 enum SyncPlanner {
+    static func shouldInclude(title: String, isAllDay: Bool, isFree: Bool, blockedWords: String) -> Bool {
+        guard isAllDay else { return !isFree }
+        let words = blockedWords.components(separatedBy: CharacterSet(charactersIn: ",，\n"))
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return !words.contains { word in
+            title.range(of: word, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+        }
+    }
+
     private struct IntervalKey: Hashable {
         let startSecond: Int64
         let endSecond: Int64

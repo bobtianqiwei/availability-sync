@@ -40,11 +40,19 @@ The target calendar is never used as a source. Availability Sync only updates ev
 
 Calendar data stays in EventKit and in the calendar accounts already configured on your Mac.
 
+## iCloud settings
+
+Enable `Sync settings with iCloud` on Macs using the same Apple Account. It shares sync ranges, interval, buffer time, all-day blocked words, duplicate merging, and the option to delete older synced events. When enabled, existing iCloud values take priority; later changes sync automatically and may take time to arrive.
+
+Calendar choices, per-calendar rules, event mappings, last sync time, login startup, and icon preferences stay on each Mac. No event data is uploaded to iCloud by this feature. Keep only one Mac syncing events to a given target calendar to avoid conflicting changes. Turning off settings sync keeps local settings and leaves the iCloud copy available to other Macs.
+
 ## Build
 
 1. Open `Availability Sync.xcodeproj` in Xcode 26.4 or later.
 2. Select the `Availability Sync` scheme and `My Mac`.
 3. Press Run.
+
+For iCloud settings sync, select your paid Apple Developer team and enable **iCloud → Key-value storage** in Signing & Capabilities for this app's identifier. Regenerate the provisioning profile if needed. All builds must use the same team and iCloud key-value store identifier. Unsigned builds can test local behavior, but cannot verify real iCloud delivery.
 
 If Calendar access was previously denied, enable it in **System Settings → Privacy & Security → Calendars**.
 
