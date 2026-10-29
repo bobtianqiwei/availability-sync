@@ -1,30 +1,34 @@
 # Availability Sync
 
-A macOS utility for sharing availability with coworkers. Copy busy time from personal calendars into your work calendar while keeping private details private.
+Share your availability with coworkers by copying busy time from personal calendars into your work calendar.
 
 [Download for macOS 14+](https://github.com/bobtianqiwei/availability-sync/releases/latest/download/Availability-Sync.zip). Unzip and move Availability Sync.app to Applications.
 
-## Use
+## Calendars
 
-Grant Full Calendar Access, choose a target, and select **Title**, **Busy**, or **Ignore** for each source calendar. Title keeps event names; Busy hides them. Click **Sync Now**, or sync automatically while the app is running.
+<img src="docs/screenshots/calendars.png" alt="Calendars" height="380">
 
-- Set past and future ranges, sync intervals, and per-calendar buffers.
-- Sync recurring and multi-day all-day events, merge duplicates, and filter all-day events by keywords.
-- Keep older synced events by default, with optional cleanup.
-- Use the menu bar, hide the Dock icon, and launch at login.
-- Optionally share general settings through iCloud and install app updates automatically.
+Grant Full Calendar Access and choose a target calendar. Select **Title** to keep event names, **Busy** to hide them, or **Ignore** to exclude a source. Enable Buffer where needed. Drag calendar names to reorder them; the insertion line shows where they will go.
 
-Calendar choices and per-calendar rules stay on each Mac. Use one Mac to sync events to each target calendar to avoid conflicts.
+## Sync Rules
 
-## Screenshots
+<img src="docs/screenshots/sync-rules.png" alt="Sync Rules" height="380">
 
-<img src="docs/screenshots/calendars.png" alt="Calendars" width="32%"> <img src="docs/screenshots/sync-rules.png" alt="Sync Rules" width="32%"> <img src="docs/screenshots/general.png" alt="General" width="32%">
+Set past and future ranges, automatic sync intervals, and buffer time. Merge duplicates and filter all-day events by keywords. Recurring and multi-day all-day events are supported. Older synced events are kept by default, with optional cleanup. Click **Sync Now** at any time.
+
+## General
+
+<img src="docs/screenshots/general.png" alt="General" height="380">
+
+Run from the menu bar, choose whether to show the Dock icon, and launch at login. Automatic syncing continues while the app is running. App updates can be downloaded and installed automatically.
+
+Optional iCloud sync shares general rules and calendar order across Macs using the same Apple Account. Calendar order matches by account and calendar name; unmatched or ambiguous calendars keep their local relative order. Calendar choices and per-calendar rules stay on each Mac. Use one Mac to sync events to each target calendar.
 
 ## Privacy
 
-Calendar processing runs locally through EventKit using accounts already added to macOS. There is no app account, server, analytics, or telemetry. Busy events omit source titles, notes, locations, attendees, and account details. The target is excluded from sources; unrelated target events are left untouched.
+Calendar processing runs locally through EventKit using accounts already added to macOS. Busy events omit source titles, notes, locations, attendees, and account details. The target is excluded from sources; unrelated target events are left untouched.
 
-Optional iCloud sync shares general settings, including blocked words, without uploading event data or event mappings.
+There is no app account, server, analytics, or telemetry. Optional iCloud sync shares settings and calendar-order identifiers, without event data or event mappings.
 
 ## Build
 

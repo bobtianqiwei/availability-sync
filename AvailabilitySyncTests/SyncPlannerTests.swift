@@ -19,6 +19,28 @@ final class SyncPlannerTests: XCTestCase {
     private let start = Date(timeIntervalSince1970: 1_800_000_000)
 
     @MainActor
+    func testCalendarOrderMatchesAcrossDifferentLocalIdentifiers() throws {
+        let suite = "AvailabilitySyncTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let cloud = TestCloudSettingsStore()
+        let settings = SettingsStore(defaults: defaults, cloudStore: cloud)
+        func calendar(_ id: String, _ title: String) -> CalendarInfo {
+            CalendarInfo(id: id, title: title, sourceTitle: "Account", allowsContentModifications: true, red: 0, green: 0, blue: 0)
+        }
+        let calendars = [calendar("a", "Work"), calendar("b", "Home")]
+        settings.iCloudSyncEnabled = true
+        XCTAssertTrue(settings.moveCalendar("a", to: "b", after: true, in: calendars))
+        let otherSuite = "AvailabilitySyncTests.\(UUID().uuidString)"
+        let otherDefaults = try XCTUnwrap(UserDefaults(suiteName: otherSuite))
+        defer { otherDefaults.removePersistentDomain(forName: otherSuite) }
+        let other = SettingsStore(defaults: otherDefaults, cloudStore: cloud)
+        other.iCloudSyncEnabled = true
+        let remote = [calendar("x", "Work"), calendar("y", "Home"), calendar("z", "Extra")]
+        XCTAssertEqual(other.orderedCalendars(remote).map(\.id), ["y", "x", "z"])
+    }
+
+    @MainActor
     func testCloudSettingsAreOptInAndKeepDeviceDataLocal() throws {
         let suite = "AvailabilitySyncTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
@@ -37,7 +59,7 @@ final class SyncPlannerTests: XCTestCase {
         settings.setBufferEnabled(true, for: "local-source")
         settings.launchAtLogin = true
         settings.lastSyncDate = Date()
-        XCTAssertEqual(cloud.values.count, 7)
+        XCTAssertEqual(cloud.values.count, 8)
         XCTAssertFalse(cloud.values.description.contains("local-target"))
         XCTAssertFalse(cloud.values.description.contains("local-source"))
         settings.iCloudSyncEnabled = false

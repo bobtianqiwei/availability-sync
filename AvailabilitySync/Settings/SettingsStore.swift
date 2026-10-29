@@ -31,6 +31,12 @@ final class SettingsStore: ObservableObject {
     }
 
     private let defaults: UserDefaults
+    @Published private(set) var calendarOrder: [String] {
+        didSet { defaults.set(calendarOrder, forKey: "calendarOrder") }
+    }
+    @Published private(set) var sharedCalendarOrder: [String] {
+        didSet { saveShared(sharedCalendarOrder, forKey: "sharedCalendarOrder") }
+    }
     private let cloudStore: CloudSettingsStorage
     private var cloudObserver: AnyCancellable?
     private var applyingCloudSettings = false
@@ -111,6 +117,8 @@ final class SettingsStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard, cloudStore: CloudSettingsStorage = NSUbiquitousKeyValueStore.default) {
         self.defaults = defaults
+        calendarOrder = defaults.stringArray(forKey: "calendarOrder") ?? []
+        sharedCalendarOrder = defaults.stringArray(forKey: "sharedCalendarOrder") ?? []
         self.cloudStore = cloudStore
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         targetCalendarIdentifier = defaults.string(forKey: Key.targetCalendarIdentifier) ?? ""
@@ -171,6 +179,7 @@ final class SettingsStore: ObservableObject {
 
     private var sharedValues: [String: Any] {
         [
+            "sharedCalendarOrder": sharedCalendarOrder,
             Key.pastRange: pastRange.rawValue,
             Key.rangeMonths: rangeMonths,
             Key.syncIntervalMinutes: syncIntervalMinutes,
@@ -203,6 +212,7 @@ final class SettingsStore: ObservableObject {
         applyingCloudSettings = true
         defer { applyingCloudSettings = false }
         func value(_ key: String) -> Any? { cloudStore.object(forKey: Self.cloudPrefix + key) }
+        if let order = value("sharedCalendarOrder") as? [String] { sharedCalendarOrder = order }
         if let raw = value(Key.pastRange) as? String, let range = PastRange(rawValue: raw) { pastRange = range }
         if let months = value(Key.rangeMonths) as? Int, [1, 2, 4, 6, 12].contains(months) { rangeMonths = months }
         if let minutes = value(Key.syncIntervalMinutes) as? Int, [1, 3, 5, 10, 15, 30, 60].contains(minutes) { syncIntervalMinutes = minutes }
@@ -215,6 +225,42 @@ final class SettingsStore: ObservableObject {
 
     func mode(for calendarIdentifier: String) -> CalendarMode {
         calendarRules[calendarIdentifier] ?? .busyOnly
+    }
+
+    func orderedCalendars(_ calendars: [CalendarInfo]) -> [CalendarInfo] {
+        let ranks = Dictionary(calendarOrder.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
+        let sharedRanks = Dictionary(sharedCalendarOrder.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
+        let counts = Dictionary(grouping: calendars, by: Self.orderKey).mapValues(\.count)
+        return calendars.enumerated().sorted {
+            let leftKey = Self.orderKey($0.element)
+            let rightKey = Self.orderKey($1.element)
+            let leftShared = counts[leftKey] == 1 ? sharedRanks[leftKey] : nil
+            let rightShared = counts[rightKey] == 1 ? sharedRanks[rightKey] : nil
+            if leftShared != rightShared { return (leftShared ?? Int.max) < (rightShared ?? Int.max) }
+            let left = ranks[$0.element.id] ?? Int.max
+            let right = ranks[$1.element.id] ?? Int.max
+            return left == right ? $0.offset < $1.offset : left < right
+        }.map(\.element)
+    }
+
+    private static func orderKey(_ calendar: CalendarInfo) -> String {
+        ManagedEventMarker.make("calendar-order|\(calendar.sourceTitle.utf8.count):\(calendar.sourceTitle)|\(calendar.title)")
+    }
+
+    func moveCalendar(_ identifier: String, to target: String, after: Bool = false, in calendars: [CalendarInfo]) -> Bool {
+        var identifiers = orderedCalendars(calendars).map(\.id)
+        guard identifier != target,
+              let from = identifiers.firstIndex(of: identifier),
+              identifiers.contains(target) else { return false }
+        identifiers.remove(at: from)
+        guard let to = identifiers.firstIndex(of: target) else { return false }
+        identifiers.insert(identifier, at: to + (after ? 1 : 0))
+        calendarOrder = identifiers + calendarOrder.filter { !identifiers.contains($0) }
+        let byID = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0) })
+        let counts = Dictionary(grouping: calendars, by: Self.orderKey).mapValues(\.count)
+        let keys = identifiers.compactMap { byID[$0].map(Self.orderKey) }.filter { counts[$0] == 1 }
+        sharedCalendarOrder = keys + sharedCalendarOrder.filter { !keys.contains($0) }
+        return true
     }
 
     func setMode(_ mode: CalendarMode, for calendarIdentifier: String) {

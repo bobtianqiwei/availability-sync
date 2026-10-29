@@ -36,7 +36,7 @@ final class AppModel: ObservableObject {
     }
 
     var sourceCalendars: [CalendarInfo] {
-        eventKit.calendars.filter { $0.id != settings.targetCalendarIdentifier }
+        settings.orderedCalendars(eventKit.calendars.filter { $0.id != settings.targetCalendarIdentifier })
     }
 
     var writableCalendars: [CalendarInfo] {
